@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fs = require('fs');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
@@ -14,16 +15,24 @@ const client = new S3Client({
   },
 });
 
-async function uploadFile(pathFile) {
+async function uploadFile(file) {
+  if (!file) throw new Error('No file');
+
+  const { photo } = file;
+  const stream = fs.createReadStream(photo.tempFilePath);
+
   const input = {
     Bucket: AWS_BUCKET_NAME,
-    Key: 'file',
-    Body: 'HappyFace.jpg',
+    Key: photo.name,
+    Body: stream,
   };
 
   const command = new PutObjectCommand(input);
+  const response = await client.send(command);
 
-  return await client.send(command);
+  return response;
 }
 
-module.exports = uploadFile;
+module.exports = {
+  uploadFile,
+};
