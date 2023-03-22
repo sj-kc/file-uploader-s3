@@ -1,6 +1,10 @@
 require('dotenv').config();
 const fs = require('fs');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require('@aws-sdk/client-s3');
 
 const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION;
@@ -28,11 +32,25 @@ async function uploadFile(file) {
   };
 
   const command = new PutObjectCommand(input);
-  const response = await client.send(command);
+  return await client.send(command);
+}
 
-  return response;
+async function getFile(eTag) {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: AWS_BUCKET_NAME,
+      Key: 'Screenshot_20221124_103019.png',
+    });
+
+    const response = await client.send(command);
+
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 module.exports = {
   uploadFile,
+  getFile,
 };

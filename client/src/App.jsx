@@ -4,32 +4,48 @@ import axios from 'axios'
 
 function App() {
   const [post, setPost] = useState({
-    title: '',
     photo: null
   })
 
+  const [eTag, setTag] = useState({
+    etag: null
+  })
+
+
   const onUpload = async (e) => {
-    e.preventDefault()
+    try {
+      e.preventDefault()
 
-    const formData = new FormData()
-    formData.append('photo', post.photo)
+      const formData = new FormData()
+      formData.append('photo', post.photo)
 
-    const response = await axios.post('http://localhost:3000/upload', formData, {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
-    })
+      const response = await axios.post('http://localhost:3000/upload', formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      })
 
-    console.log(response);
+      setTag({ etag: response.data.ETag })
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
     <div>
       <form onSubmit={onUpload}>
-        <input type="text" name="title" placeholder='title' onChange={(e) => setPost({ ...post, title: e.target.value })} />
         <input type="file" name="photo" onChange={e => setPost({ ...post, photo: e.target.files[0] })} />
         <button type="submit">Upload</button>
       </form>
+
+      {
+        eTag.etag &&
+        <div>
+          <div>
+            <p>Id of image: {eTag.etag}</p>
+          </div>
+        </div>
+      }
     </div>
   )
 }
